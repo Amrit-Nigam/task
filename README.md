@@ -4,8 +4,6 @@ A browsable field index of all 1,025 Pokémon, built on the [PokéAPI](https://p
 A React + TypeScript client, and an Express API that caches and indexes upstream data so
 filtering and stat sorting run over the whole Pokédex rather than just the loaded page.
 
-![Home](docs/screenshots/01-home-light.png)
-
 ---
 
 ## Features
@@ -45,12 +43,6 @@ filtering and stat sorting run over the whole Pokédex rather than just the load
 - ⭐ **Reduced motion** respected throughout.
 - ⭐ **Four casings** — Poké, Great, Ultra and Master Ball, each recolouring the whole
   device. See below.
-
-| | |
-|---|---|
-| ![Dark mode](docs/screenshots/02-home-dark.png) | ![Detail drawer](docs/screenshots/03-detail-drawer.png) |
-| ![Type filter](docs/screenshots/04-type-filter.png) | ![Compare](docs/screenshots/05-compare.png) |
-| ![Empty state](docs/screenshots/06-empty-state.png) | ![Mobile](docs/screenshots/07-mobile.png) |
 
 ---
 
@@ -104,11 +96,6 @@ Four balls, each carrying a *pair*: `casing` is the shell the device is moulded 
 `accent` is the secondary that every interactive part takes. The pairing is the point —
 Great is blue with red, Ultra is black with gold — so a theme is never a single-hue tint.
 
-| | |
-|---|---|
-| ![Great Ball](docs/screenshots/09-ball-great.png) | ![Ultra Ball](docs/screenshots/09-ball-ultra.png) |
-| ![Master Ball](docs/screenshots/09-ball-master.png) | |
-
 The interior is tinted by the ball too, not left neutral — a black-and-gold Ultra shell
 around plain grey panels reads as two unrelated designs. Each interior is tinted toward
 the colour that *identifies* its ball, kept within a few percent of white so ink contrast
@@ -150,7 +137,7 @@ exact same repository at the exact same paths, so it is a host swap and nothing 
 | Icons | Lucide |
 | Type | Space Grotesk (display), Instrument Sans (body), JetBrains Mono (readouts) |
 | Server | Node 20, Express 4, TypeScript |
-| Tooling | ESLint (typescript-eslint + react-hooks), npm workspaces |
+| Tooling | ESLint (typescript-eslint + react-hooks) |
 
 No data-fetching library: the request logic is small, and hand-rolling it keeps the
 abort/retry/race behaviour explicit and visible.
@@ -185,13 +172,21 @@ Requires Node 20 or newer.
 ```bash
 git clone https://github.com/Amrit-Nigam/task.git
 cd task
-npm install          # installs both workspaces
+
+cd server && npm install
+cd ../client && npm install
 ```
+
+The server and the client are independent packages, each with its own `package.json`
+and lockfile. There is nothing to install at the repository root.
 
 ## Running Locally
 
+Two terminals:
+
 ```bash
-npm run dev          # server on :4000, client on :5173
+cd server && npm run dev     # http://localhost:4000
+cd client && npm run dev     # http://localhost:5173
 ```
 
 Open http://localhost:5173. Vite proxies `/api` to the local server, so there is nothing
@@ -200,10 +195,12 @@ to configure for development.
 Other scripts:
 
 ```bash
-npm run build        # type-check and build both workspaces
-npm run typecheck    # types only
-npm run lint         # ESLint over the client
-npm start            # run the built server
+cd client && npm run build       # type-check and build the client
+cd client && npm run typecheck   # types only
+cd client && npm run lint        # ESLint over the client
+
+cd server && npm run build       # compile the server
+cd server && npm start           # run the built server
 ```
 
 Environment variables are documented in `client/.env.example` and `server/.env.example`.
@@ -227,15 +224,13 @@ task/
 │       ├── services/         pokemonApi — every network call and its error mapping
 │       └── types/            pokemon — shapes shared with the server
 │
-├── server/
-│   └── src/
-│       ├── lib/              cache (TTL + single-flight), concurrency, errors,
-│       │                     async-handler
-│       ├── routes/           pokemon — list, detail, types
-│       ├── services/         pokeapi — upstream client, normalisation, stat index
-│       └── types.ts
-│
-└── docs/screenshots/
+└── server/
+    └── src/
+        ├── lib/              cache (TTL + single-flight), concurrency, errors,
+        │                     async-handler
+        ├── routes/           pokemon — list, detail, types
+        ├── services/         pokeapi — upstream client, normalisation, stat index
+        └── types.ts
 ```
 
 ## Challenges Faced
