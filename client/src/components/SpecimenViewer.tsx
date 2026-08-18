@@ -57,7 +57,11 @@ export function SpecimenViewer({
           </span>
         </div>
 
-        <div className="screen relative grid aspect-[5/4] max-h-[26vh] w-full place-items-center overflow-hidden">
+        {/* A definite height, not an aspect ratio capped by max-height: with a
+            ratio the child's percentage height resolves against the pre-clamp
+            box, so the artwork rendered taller than the screen and was cropped
+            by the overflow. */}
+        <div className="screen relative flex h-[clamp(190px,26vh,280px)] w-full items-center justify-center overflow-hidden p-3">
           {/* Scanline wash — the display is lit, not printed. */}
           <span
             aria-hidden
@@ -79,7 +83,7 @@ export function SpecimenViewer({
                   alt={formatName(detail.name)}
                   width={340}
                   height={340}
-                  className="relative z-10 h-[80%] w-[80%] animate-fade-up object-contain drop-shadow-[0_18px_28px_rgb(var(--type-rgb)/0.4)]"
+                  className="relative z-10 max-h-full max-w-full animate-fade-up object-contain drop-shadow-[0_18px_28px_rgb(var(--type-rgb)/0.4)]"
                 />
               ) : (
                 <span className="readout relative z-10">No artwork</span>
