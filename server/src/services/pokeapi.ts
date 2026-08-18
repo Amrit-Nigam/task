@@ -109,13 +109,31 @@ function emptyStats(): StatBlock {
   return { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 };
 }
 
+/**
+ * PokéAPI hands back sprite URLs pointing at raw.githubusercontent.com, which
+ * is a source host rather than a CDN: it is rate limited, uncached, and blocked
+ * outright on plenty of corporate and ISP networks — where every sprite in the
+ * Pokédex silently fails to load and the whole app renders as empty halos.
+ *
+ * jsDelivr mirrors the exact same repository at the exact same paths, so the
+ * rewrite is a host swap and nothing else. Anything that is not the sprites
+ * repo is left untouched.
+ */
+const SPRITE_SOURCE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/";
+const SPRITE_CDN = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/";
+
+function toCdn(url: string | null): string | null {
+  if (!url) return null;
+  return url.startsWith(SPRITE_SOURCE) ? SPRITE_CDN + url.slice(SPRITE_SOURCE.length) : url;
+}
+
 function pickSprite(sprites: RawPokemon["sprites"]): string | null {
-  return (
+  return toCdn(
     sprites.other?.["official-artwork"]?.front_default ??
-    sprites.other?.home?.front_default ??
-    sprites.other?.dream_world?.front_default ??
-    sprites.front_default ??
-    null
+      sprites.other?.home?.front_default ??
+      sprites.other?.dream_world?.front_default ??
+      sprites.front_default ??
+      null,
   );
 }
 

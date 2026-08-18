@@ -5,10 +5,13 @@ import { cn } from "@/lib/utils";
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
+  /** Drop the `/` hint. The device's open half is too narrow to carry both it
+      and a readable placeholder; the shortcut still works without the label. */
+  narrow?: boolean;
 }
 
 /** Search by name. Press / anywhere to jump here, Escape to clear. */
-export function SearchBar({ value, onChange }: SearchBarProps) {
+export function SearchBar({ value, onChange, narrow = false }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -40,7 +43,9 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         ref={inputRef}
         type="search"
         value={value}
-        placeholder="Search Pokémon by name"
+        /* Short enough to survive the device's narrow half without ellipsing;
+           the accessible name below still says what it searches. */
+        placeholder="Search Pokémon"
         aria-label="Search Pokémon by name"
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
@@ -60,7 +65,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         >
           <X className="h-4 w-4" />
         </button>
-      ) : (
+      ) : narrow ? null : (
         <kbd className="readout hidden shrink-0 rounded border-2 border-[var(--pd-black)] px-1.5 py-0.5 sm:block">
           /
         </kbd>

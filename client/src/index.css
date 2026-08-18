@@ -29,6 +29,18 @@
     --pd-accent-ink: var(--ball-accent-ink, #ffffff);
     --pd-black: #1b1b1b;
 
+    /* Parts the reference device is built from, beyond the casing itself:
+       the silver-white moulding the screen is set into, the black display
+       strips, the lit green readout on them, and the blue keypad keys. These
+       are hardware colours — they stay put across every ball, the way the
+       physical parts would. */
+    --pd-frame: #e9e9ea;
+    --pd-frame-lo: #c6c6c9;
+    --pd-display: #16181c;
+    --pd-display-ink: #7ee081;
+    --pd-key: #4aa3e0;
+    --pd-key-lo: #2f7fb8;
+
     /* indicator lights — the lamp cluster reads the same on every ball */
     --pd-led-red: #e44b4b;
     --pd-led-yellow: #f2c438;
@@ -169,6 +181,32 @@
     background:
       radial-gradient(circle at 34% 30%, rgb(255 255 255 / 0.75), transparent 50%),
       var(--lamp-color, var(--pd-led-red));
+  }
+
+  /* The silver moulding the main screen is set into — the white bezel on the
+     reference device, lit from above. */
+  .frame {
+    background: linear-gradient(180deg, #fbfbfc 0%, var(--pd-frame) 55%, var(--pd-frame-lo) 100%);
+    border: var(--pd-border);
+    border-radius: 10px;
+    box-shadow: var(--pd-drop);
+  }
+
+  /* A black display strip. Text on it is lit, not printed, so it takes
+     `--pd-display-ink` and a mono face. */
+  .display {
+    background: var(--pd-display);
+    border: var(--pd-border-sm);
+    border-radius: 6px;
+    color: var(--pd-display-ink);
+  }
+
+  /* A key from the blue pad on the device's right half. */
+  .key {
+    background: linear-gradient(180deg, var(--pd-key) 0%, var(--pd-key-lo) 100%);
+    border: var(--pd-border-sm);
+    border-radius: 6px;
+    color: #fff;
   }
 
   /* A pressable moulded control. The press is physical: the button travels

@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { EntryData } from "@/components/EntryData";
 import { ErrorState } from "@/components/ErrorState";
 import { Header } from "@/components/Header";
+import { HingeSpine } from "@/components/HingeSpine";
 import { IndexList } from "@/components/IndexList";
 import { PokemonGrid } from "@/components/PokemonGrid";
 import { SearchBar } from "@/components/SearchBar";
@@ -24,6 +25,7 @@ import { usePokemonDetail } from "@/hooks/usePokemonDetail";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { useTheme } from "@/hooks/useTheme";
 import { useTypes } from "@/hooks/useTypes";
+import { formatDexNumber } from "@/lib/format";
 import type { ListQuery, PokemonSummary, SortKey, SortOrder } from "@/types/pokemon";
 
 const STAT_SORTS: SortKey[] = ["hp", "attack", "defense", "speed"];
@@ -93,6 +95,20 @@ export function ExplorerPage() {
   const viewedName = selectedName ?? (isCompact ? null : (results[0]?.name ?? null));
   const viewed = usePokemonDetail(viewedName);
 
+  /* The D-pad walks the result set the list is already showing, so stepping
+     always agrees with what is on screen — filtered, sorted, favourites-only
+     and all. Clamped rather than wrapped: running off the end of 1,025 back to
+     the start is disorienting when the set is this long. */
+  const viewedIndex = results.findIndex((entry) => entry.name === viewedName);
+  const step = useCallback(
+    (delta: number) => {
+      if (viewedIndex < 0) return;
+      const next = results[viewedIndex + delta];
+      if (next) navigate(`/pokemon/${next.name}`);
+    },
+    [results, viewedIndex, navigate],
+  );
+
   const toggleCompare = useCallback((pokemon: PokemonSummary) => {
     setCompareSelection((current) => {
       const without = current.filter((entry) => entry.name !== pokemon.name);
@@ -122,7 +138,9 @@ export function ExplorerPage() {
   const controls = (
     <div className="shrink-0 space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row">
-        <SearchBar value={searchInput} onChange={setSearchInput} />
+        {/* Open, the search sits in the device's 380px half; closed, it has the
+            full width of the phone. */}
+        <SearchBar value={searchInput} onChange={setSearchInput} narrow={!isCompact} />
         <SortControl
           sort={sort}
           order={order}
@@ -244,25 +262,42 @@ export function ExplorerPage() {
         ) : (
           /* Open: the two halves, hinged down the middle. Each scrolls in its
              own right, so reading the record never scrolls the index away. */
-          <div className="grid grid-cols-[minmax(0,380px)_minmax(0,1fr)] items-start gap-4 xl:grid-cols-[minmax(0,440px)_minmax(0,1fr)]">
-            <div className="flex h-[calc(100dvh-13rem)] min-h-[40rem] flex-col gap-3">
+          <div className="flex items-stretch gap-2">
+            <div className="flex h-[calc(100dvh-13rem)] min-h-[40rem] w-[380px] shrink-0 flex-col gap-3 xl:w-[440px]">
               <SpecimenViewer
                 detail={viewed.detail}
                 isLoading={viewed.status === "loading" && Boolean(viewedName)}
                 isFavorite={viewed.detail ? isFavorite(viewed.detail.name) : false}
                 onToggleFavorite={toggleFavorite}
+                onStep={step}
+                canStepBack={viewedIndex > 0}
+                canStepForward={viewedIndex >= 0 && viewedIndex < results.length - 1}
               />
               {controls}
               {indexPane}
             </div>
 
-            <div className="screen h-[calc(100dvh-13rem)] min-h-[40rem] overflow-y-auto p-5 xl:p-7">
+            <HingeSpine />
+
+            <div className="screen h-[calc(100dvh-13rem)] min-h-[40rem] min-w-0 flex-1 overflow-y-auto p-5 xl:p-7">
               {list.indexing && STAT_SORTS.includes(sort) && !showFavoritesOnly ? (
                 <p className="mb-5 flex items-center gap-2 text-xs text-muted">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Building the stat index — ordering will settle shortly.
                 </p>
               ) : null}
+
+              {/* The record's own black strip, as across the top of the
+                  device's right half. It names what the panel is showing so the
+                  half stands on its own when the viewer is scrolled past. */}
+              <div className="display mb-5 flex items-center justify-between gap-3 px-3 py-2">
+                <span className="font-mono text-[11px] font-bold uppercase tracking-[0.18em]">
+                  Specimen record
+                </span>
+                <span className="font-mono text-[11px] font-bold tabular-nums">
+                  {viewed.detail ? formatDexNumber(viewed.detail.id) : "————"}
+                </span>
+              </div>
 
               {viewedName ? (
                 <EntryData

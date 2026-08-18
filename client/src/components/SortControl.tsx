@@ -36,13 +36,15 @@ export function SortControl({
         </select>
       </label>
 
+      {/* Styled as a key off the device's blue pad — the one control here that
+          is a toggle rather than a field, so it reads as hardware. */}
       <Button
         variant="outline"
         size="icon"
         onClick={() => onOrderChange(order === "asc" ? "desc" : "asc")}
         aria-label={order === "asc" ? "Sort descending" : "Sort ascending"}
         title={order === "asc" ? "Ascending" : "Descending"}
-        className="h-12 w-12"
+        className="key h-12 w-12 rounded-[10px] border-[3px] hover:brightness-110"
       >
         {order === "asc" ? (
           <ArrowUpNarrowWide className="h-4 w-4" />

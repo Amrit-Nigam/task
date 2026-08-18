@@ -68,13 +68,26 @@ wordmark stamped into the casing.
 Below the hinge the device **opens into two halves**, the way a Pokédex does: the
 specimen on one side, the record on the other.
 
-- **Left — the viewer.** One lit screen showing the selected Pokémon large, under its own
-  type halo and a faint scanline wash, with the dex number, name and types stamped
-  beneath. Under it sit the search, sort and type controls, then the index itself as a
-  scrolling list of rows. Rows rather than cards here: at this width a grid would fit two
-  across and turn the whole half into artwork, which is the viewer's job.
-- **Right — the record.** Description, height, weight, base experience, the segmented
-  base-stat meters, abilities and level-up moves.
+- **Left — the viewer.** The display is not a panel floating on the casing: it is set into
+  a silver moulding with two lamps above it and speaker slits below, showing the selected
+  Pokémon large under its own type halo and a faint scanline wash. Beneath the moulding
+  sits the control cluster — the big round button that keeps a specimen, the lit green
+  readout naming it, and a **D-pad that walks the index one entry at a time**. Then the
+  search, sort and type controls, and the index itself as a scrolling list of rows. Rows
+  rather than cards here: at this width a grid would fit two across and turn the whole
+  half into artwork, which is the viewer's job.
+- **Right — the record.** Opens with its own black display strip, then description,
+  height, weight, base experience, the segmented base-stat meters, abilities and level-up
+  moves.
+
+The two halves are joined by the hinge spine — the barrel standing proud of both, lit down
+one edge. Without it the halves read as two unrelated panels that happen to sit side by
+side; with it they read as one object that opens.
+
+The parts beyond the casing — the silver moulding, the black display strips, the lit green
+readout, the blue keypad key on the sort toggle — are *hardware* colours. They stay put
+across every ball, the way the physical parts would, so only the shell changes when you
+switch casings.
 
 Each half scrolls independently, so reading the record never scrolls the index away, and
 selecting a row swaps the viewer and the record together. With nothing picked the device
@@ -113,6 +126,17 @@ Two details make the system hold together:
 The choice persists to `localStorage`. The store is a `useSyncExternalStore` subscription
 (`client/src/lib/ballThemes.ts`), so components that need the descriptor itself — the
 switcher's selected state — re-render, while everything painted with a token does not.
+
+---
+
+### A note on sprites
+
+PokéAPI returns sprite URLs pointing at `raw.githubusercontent.com`, which is a source
+host rather than a CDN: rate limited, uncached, and blocked outright on plenty of
+corporate and ISP networks — where every sprite silently fails and the Pokédex renders as
+a grid of empty halos. The server rewrites those URLs onto jsDelivr, which mirrors the
+exact same repository at the exact same paths, so it is a host swap and nothing else
+(`server/src/services/pokeapi.ts`).
 
 ---
 

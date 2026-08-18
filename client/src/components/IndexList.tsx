@@ -72,10 +72,10 @@ export function IndexList({
                     decoding="async"
                     width={44}
                     height={44}
-                    className="h-11 w-11 shrink-0 object-contain"
+                    className="h-10 w-10 shrink-0 object-contain"
                   />
                 ) : (
-                  <span className="h-11 w-11 shrink-0" />
+                  <span className="h-10 w-10 shrink-0" />
                 )}
 
                 <span className="readout w-12 shrink-0 text-[10px]">
@@ -85,7 +85,7 @@ export function IndexList({
                 <Link
                   to={`/pokemon/${entry.name}`}
                   className={cn(
-                    "min-w-0 flex-1 truncate py-3 text-[15px] font-semibold outline-none",
+                    "min-w-0 flex-1 truncate py-2 text-[15px] font-semibold outline-none",
                     "after:absolute after:inset-0 after:content-['']",
                     isActive && "text-[rgb(var(--type-rgb))]",
                   )}
