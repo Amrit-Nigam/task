@@ -1,6 +1,6 @@
-import { Loader2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { BallLoader } from "@/components/BallLoader";
 import { CompareDialog } from "@/components/CompareDialog";
 import { CompareTray } from "@/components/CompareTray";
 import { DetailPanel } from "@/components/DetailPanel";
@@ -26,6 +26,7 @@ import { usePokemonList } from "@/hooks/usePokemonList";
 import { useTheme } from "@/hooks/useTheme";
 import { useTypes } from "@/hooks/useTypes";
 import { formatDexNumber } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { ListQuery, PokemonSummary, SortKey, SortOrder } from "@/types/pokemon";
 
 const STAT_SORTS: SortKey[] = ["hp", "attack", "defense", "speed"];
@@ -137,7 +138,16 @@ export function ExplorerPage() {
 
   const controls = (
     <div className="shrink-0 space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div
+        className={cn(
+          "flex gap-2 sm:gap-3",
+          /* Stacked only on a phone. In the open device's narrow half the two
+             stay on one row and the search field shortens its placeholder
+             instead — a stacked pair costs the index list ~45px, and on a
+             768px-high screen the index has none to give. */
+          isCompact ? "flex-col sm:flex-row" : "flex-row",
+        )}
+      >
         {/* Open, the search sits in the device's 380px half; closed, it has the
             full width of the phone. */}
         <SearchBar value={searchInput} onChange={setSearchInput} narrow={!isCompact} />
@@ -146,6 +156,10 @@ export function ExplorerPage() {
           order={order}
           onSortChange={setSort}
           onOrderChange={setOrder}
+          /* In the open device's 340px half the label would leave the search
+             field too short to read its own placeholder, so it is dropped
+             until the half is wide enough to carry both. */
+          compact={!isCompact}
           className="shrink-0"
         />
       </div>
@@ -200,7 +214,7 @@ export function ExplorerPage() {
     );
 
   return (
-    <div className="min-h-dvh pb-28">
+    <div className={cn("min-h-dvh", compareSelection.length > 0 ? "pb-28" : "pb-6")}>
       <DeviceShell
         status={
           <>
@@ -224,7 +238,7 @@ export function ExplorerPage() {
           <div className="space-y-3">
             {controls}
             {notice ?? (
-              <div className="screen p-3">
+              <div className="screen p-2 sm:p-3">
                 <PokemonGrid
                   pokemon={results}
                   isLoading={isInitialLoading || list.status === "loading-more"}
@@ -244,7 +258,7 @@ export function ExplorerPage() {
                     >
                       {list.status === "loading-more" ? (
                         <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <BallLoader variant="spin" className="h-4 w-4" />
                           Loading
                         </>
                       ) : (
@@ -263,7 +277,7 @@ export function ExplorerPage() {
           /* Open: the two halves, hinged down the middle. Each scrolls in its
              own right, so reading the record never scrolls the index away. */
           <div className="flex items-stretch gap-2">
-            <div className="flex h-[calc(100dvh-13rem)] min-h-[40rem] w-[380px] shrink-0 flex-col gap-3 xl:w-[440px]">
+            <div className="flex h-[calc(100dvh-13.5rem)] min-h-[26rem] w-[340px] shrink-0 flex-col gap-3 xl:w-[440px] 2xl:w-[480px]">
               <SpecimenViewer
                 detail={viewed.detail}
                 isLoading={viewed.status === "loading" && Boolean(viewedName)}
@@ -279,10 +293,10 @@ export function ExplorerPage() {
 
             <HingeSpine />
 
-            <div className="screen h-[calc(100dvh-13rem)] min-h-[40rem] min-w-0 flex-1 overflow-y-auto p-5 xl:p-7">
+            <div className="screen h-[calc(100dvh-13.5rem)] min-h-[26rem] min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 lg:p-5 xl:p-7">
               {list.indexing && STAT_SORTS.includes(sort) && !showFavoritesOnly ? (
                 <p className="mb-5 flex items-center gap-2 text-xs text-muted">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <BallLoader variant="spin" className="h-3.5 w-3.5" />
                   Building the stat index — ordering will settle shortly.
                 </p>
               ) : null}

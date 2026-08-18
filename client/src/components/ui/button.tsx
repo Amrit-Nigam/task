@@ -22,10 +22,12 @@ const buttonVariants = cva(
         ghost: "border-transparent shadow-none text-muted hover:bg-ink/[0.06] hover:text-ink",
         signal: "bg-[var(--pd-accent)] text-[var(--pd-accent-ink)] hover:brightness-110",
       },
+      /* Each size grows under a coarse pointer: the same control that is
+         comfortable at 36px with a mouse is not with a thumb. */
       size: {
-        sm: "h-9 px-3.5 text-sm",
+        sm: "h-9 px-3.5 text-sm coarse:h-11 coarse:px-4",
         md: "h-11 px-5 text-sm",
-        icon: "h-10 w-10",
+        icon: "h-10 w-10 coarse:h-11 coarse:w-11",
       },
     },
     defaultVariants: { variant: "outline", size: "md" },

@@ -17,7 +17,9 @@ export function TypeChip({ type, size = "sm", className }: TypeChipProps) {
         "inline-flex items-center gap-1.5 rounded-full border font-medium",
         "border-[rgb(var(--type-rgb)/0.32)] bg-[rgb(var(--type-rgb)/0.14)] text-[rgb(var(--type-rgb))]",
         "dark:bg-[rgb(var(--type-rgb)/0.18)] dark:brightness-125",
-        size === "sm" ? "px-2.5 py-0.5 text-xs" : "px-3.5 py-1 text-sm",
+        size === "sm"
+          ? "px-2 py-0.5 text-[11px] sm:px-2.5 sm:text-xs"
+          : "px-3.5 py-1 text-sm",
         className,
       )}
     >

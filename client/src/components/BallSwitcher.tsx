@@ -1,12 +1,13 @@
+import { PokeBall } from "@/components/PokeBall";
 import { BALLS, setBallIndex, useBallIndex } from "@/lib/ballThemes";
 import { cn } from "@/lib/utils";
 
 /**
  * The casing selector — four balls, each recolouring the whole device.
  *
- * Each swatch is drawn as the ball itself rather than as a colour chip: dome
- * over shell, split by the hinge band. It is the clearest label the control
- * could have, and it doubles as a preview of what the casing becomes.
+ * Each swatch is the ball itself rather than a colour chip — and a real one,
+ * with its own livery, so the control is read by recognition rather than by
+ * hue. It doubles as a preview of what the casing becomes.
  */
 export function BallSwitcher() {
   const active = useBallIndex();
@@ -15,7 +16,7 @@ export function BallSwitcher() {
     <div
       role="radiogroup"
       aria-label="Casing"
-      className="flex items-center gap-1.5 rounded-full border-2 border-[var(--pd-black)] bg-black/20 p-1.5"
+      className="flex items-center gap-1.5 rounded-full border-2 border-[var(--pd-black)] bg-black/20 p-1.5 coarse:gap-2"
     >
       {BALLS.map((ball, i) => (
         <button
@@ -26,24 +27,17 @@ export function BallSwitcher() {
           title={ball.name}
           onClick={() => setBallIndex(i)}
           className={cn(
-            "relative h-6 w-6 overflow-hidden rounded-full border-2 border-[var(--pd-black)] transition-transform",
+            /* A 24px swatch under a mouse, 36px under a finger — including on
+               a tablet, which is wide enough that a width breakpoint would
+               have handed it the mouse size. Grown rather than given a slop
+               ring: at this gap the rings would overlap and the last one in
+               the DOM would swallow its neighbour's taps. */
+            "relative h-6 w-6 rounded-full transition-transform coarse:h-9 coarse:w-9",
             "hover:scale-110",
-            i === active ? "scale-110 ring-2 ring-white/80" : "opacity-80",
+            i === active ? "scale-[1.15] rounded-full ring-2 ring-white" : "opacity-70 hover:opacity-100",
           )}
         >
-          {/* upper dome */}
-          <span
-            className="absolute inset-x-0 top-0 h-1/2"
-            style={{ background: ball.dome }}
-          />
-          {/* lower shell */}
-          <span
-            className="absolute inset-x-0 bottom-0 h-1/2"
-            style={{ background: ball.key === "ultra" ? ball.casing : "#f2f2f2" }}
-          />
-          {/* hinge band + release button */}
-          <span className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 bg-[var(--pd-black)]" />
-          <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--pd-black)] bg-white" />
+          <PokeBall ball={ball} className="h-full w-full" />
         </button>
       ))}
     </div>

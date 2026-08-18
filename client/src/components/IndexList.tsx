@@ -1,5 +1,6 @@
-import { GitCompareArrows, Heart, Loader2 } from "lucide-react";
+import { GitCompareArrows, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { BallLoader } from "@/components/BallLoader";
 import { Button } from "@/components/ui/button";
 import { formatDexNumber, formatName } from "@/lib/format";
 import { typeVars } from "@/lib/types-theme";
@@ -43,8 +44,11 @@ export function IndexList({
   total,
 }: IndexListProps) {
   return (
-    <div className="screen flex min-h-0 flex-1 flex-col overflow-hidden">
-      <ul className="min-h-0 flex-1 divide-y-2 divide-[var(--pd-black)] overflow-y-auto">
+    /* `min-h` rather than pure flex: the viewer and the controls above are
+       fixed-height, so on a short screen the index was the only thing left to
+       give and collapsed to a couple of pixels. */
+    <div className="screen flex min-h-[9rem] flex-1 flex-col overflow-hidden">
+      <ul className="min-h-0 flex-1 divide-y-2 divide-[var(--pd-black)] overflow-y-auto overscroll-contain">
         {pokemon.map((entry) => {
           const isActive = entry.name === activeName;
           return (
@@ -104,7 +108,7 @@ export function IndexList({
                         : `Add ${formatName(entry.name)} to compare`
                     }
                     className={cn(
-                      "grid h-8 w-8 place-items-center rounded-full transition-colors",
+                      "grid h-9 w-9 place-items-center rounded-full transition-colors coarse:h-10 coarse:w-10",
                       isSelectedForCompare(entry.name)
                         ? "bg-ink text-canvas"
                         : "text-muted/60 hover:bg-ink/[0.08] hover:text-ink",
@@ -122,7 +126,7 @@ export function IndexList({
                         : `Favorite ${formatName(entry.name)}`
                     }
                     className={cn(
-                      "grid h-8 w-8 place-items-center rounded-full transition-colors",
+                      "grid h-9 w-9 place-items-center rounded-full transition-colors coarse:h-10 coarse:w-10",
                       isFavorite(entry.name)
                         ? "text-signal"
                         : "text-muted/60 hover:bg-ink/[0.08] hover:text-ink",
@@ -157,7 +161,7 @@ export function IndexList({
           <Button variant="outline" size="sm" onClick={onLoadMore} disabled={isLoadingMore}>
             {isLoadingMore ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <BallLoader variant="spin" className="h-4 w-4" />
                 Loading
               </>
             ) : (

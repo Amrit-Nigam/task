@@ -79,7 +79,11 @@ export function DeviceShell({ actions, status, children }: DeviceShellProps) {
             ) : null}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          {/* The bezel controls wrap among themselves rather than being held
+              rigid: at 320px the pair of buttons and the four casing swatches
+              come to more than the shell is wide, and `shrink-0` turned that
+              into a document-wide horizontal scroll. */}
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             {actions}
             <BallSwitcher />
           </div>

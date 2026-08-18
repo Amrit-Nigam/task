@@ -12,6 +12,14 @@ interface PokemonGridProps {
   onToggleCompare: (pokemon: PokemonSummary) => void;
 }
 
+/**
+ * The card grid the closed device shows.
+ *
+ * Two columns from the narrowest phone up. One column looked calmer in
+ * isolation but put a single specimen on a 667px screen — one row of a
+ * 1,025-entry index per scroll, which is not a Pokédex, it is a slideshow.
+ * The card carries a compact mode for that width instead.
+ */
 export function PokemonGrid({
   pokemon,
   isLoading,
@@ -22,7 +30,7 @@ export function PokemonGrid({
   onToggleCompare,
 }: PokemonGridProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
       {pokemon.map((entry, index) => (
         <PokemonCard
           key={entry.id}

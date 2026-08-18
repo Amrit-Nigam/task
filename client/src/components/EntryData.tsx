@@ -51,9 +51,9 @@ export function EntryData({ detail, status, error, onRetry }: EntryDataProps) {
     /* The record carries its own type vars: it is rendered detached from the
        card and the viewer, so without these the stat meters lose their tint
        and fall back to an untinted grey. */
-    <div className="space-y-7" style={typeVars(detail.types)}>
+    <div className="space-y-6 sm:space-y-7" style={typeVars(detail.types)}>
       <header className="space-y-3">
-        <h2 className="font-display text-[2rem] font-bold leading-none tracking-tight">
+        <h2 className="font-display text-[1.65rem] font-bold leading-none tracking-tight sm:text-[2rem]">
           {formatName(detail.name)}
         </h2>
         {detail.genus ? <p className="readout text-[11px]">{detail.genus}</p> : null}
@@ -68,7 +68,7 @@ export function EntryData({ detail, status, error, onRetry }: EntryDataProps) {
         <p className="text-[15px] leading-relaxed text-muted">{detail.description}</p>
       ) : null}
 
-      <dl className="grid grid-cols-3 gap-3">
+      <dl className="grid grid-cols-3 gap-2 sm:gap-3">
         <Measure
           icon={<Ruler className="h-4 w-4" />}
           label="Height"
@@ -171,26 +171,86 @@ function Measure({
 
 export function EntrySkeleton() {
   return (
-    <div className="space-y-7">
-      <div className="space-y-3">
-        <div className="skeleton h-8 w-48 rounded" />
+    /* Mirrors the record's own structure section for section, at the same
+       `space-y` the real one uses — a skeleton that only approximates the
+       shape it replaces just moves the jump from load time to swap time. */
+    <div className="space-y-6 sm:space-y-7">
+      <header className="space-y-3">
+        {/* 32px / 38px: the rendered heights of the name at its two sizes. */}
+        <div className="skeleton h-8 w-52 rounded sm:h-[38px]" />
         <div className="skeleton h-3 w-32 rounded" />
         <div className="flex gap-2">
-          <div className="skeleton h-7 w-24 rounded-full" />
-          <div className="skeleton h-7 w-20 rounded-full" />
+          <div className="skeleton h-[30px] w-24 rounded-full" />
+          <div className="skeleton h-[30px] w-20 rounded-full" />
         </div>
+      </header>
+
+      {/* Two lines of flavour text, ragged like the real thing. */}
+      <div className="space-y-2">
+        <div className="skeleton h-4 w-full rounded" />
+        <div className="skeleton h-4 w-4/5 rounded" />
       </div>
-      <div className="skeleton h-16 w-full rounded-xl" />
-      <div className="grid grid-cols-3 gap-3">
-        <div className="skeleton h-[68px] rounded-xl" />
-        <div className="skeleton h-[68px] rounded-xl" />
-        <div className="skeleton h-[68px] rounded-xl" />
+
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="skeleton h-[74px] rounded-[10px]" />
+        <div className="skeleton h-[74px] rounded-[10px]" />
+        <div className="skeleton h-[74px] rounded-[10px]" />
       </div>
-      <div className="space-y-2.5">
-        {Array.from({ length: 6 }, (_, index) => (
-          <div key={index} className="skeleton h-6 w-full rounded" />
-        ))}
-      </div>
+
+      <SkeletonSection labelWidth="w-20">
+        <div className="space-y-2.5">
+          {Array.from({ length: 6 }, (_, index) => (
+            /* The stat row's own three-column geometry, so the meters do not
+               slide sideways as they come in. */
+            <div
+              key={index}
+              className="grid grid-cols-[3.75rem_1fr_2.25rem] items-center gap-3"
+            >
+              <div className="skeleton h-2.5 rounded" />
+              <div className="skeleton h-2.5 rounded" />
+              <div className="skeleton h-3 rounded" />
+            </div>
+          ))}
+          <div className="flex items-center justify-between border-t-2 border-[var(--pd-black)] pt-3">
+            <div className="skeleton h-2.5 w-10 rounded" />
+            <div className="skeleton h-3.5 w-8 rounded" />
+          </div>
+        </div>
+      </SkeletonSection>
+
+      <SkeletonSection labelWidth="w-16">
+        <div className="flex flex-wrap gap-2">
+          <div className="skeleton h-[34px] w-28 rounded-full" />
+          <div className="skeleton h-[34px] w-24 rounded-full" />
+        </div>
+      </SkeletonSection>
+
+      <SkeletonSection labelWidth="w-28">
+        <div className="divide-y-2 divide-[var(--pd-black)] overflow-hidden rounded-xl border-2 border-[var(--pd-black)]">
+          {Array.from({ length: 5 }, (_, index) => (
+            <div key={index} className="flex items-center justify-between bg-raised px-4 py-3">
+              <div className="skeleton h-3.5 w-32 rounded" />
+              <div className="skeleton h-2.5 w-10 rounded" />
+            </div>
+          ))}
+        </div>
+      </SkeletonSection>
     </div>
+  );
+}
+
+/** A section heading and its body, at `Section`'s spacing. */
+function SkeletonSection({
+  labelWidth,
+  children,
+}: {
+  labelWidth: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className={`skeleton h-2.5 rounded ${labelWidth}`} />
+      {children}
+    </section>
   );
 }

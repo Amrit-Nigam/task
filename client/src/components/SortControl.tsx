@@ -8,6 +8,9 @@ interface SortControlProps {
   order: SortOrder;
   onSortChange: (sort: SortKey) => void;
   onOrderChange: (order: SortOrder) => void;
+  /** Drop the "Sort" label. The open device's half cannot carry it and a
+      readable search field at the same time. */
+  compact?: boolean;
   className?: string;
 }
 
@@ -16,17 +19,23 @@ export function SortControl({
   order,
   onSortChange,
   onOrderChange,
+  compact = false,
   className,
 }: SortControlProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <label className="slot relative flex h-12 items-center gap-2 pl-4 pr-3 focus-within:ring-2 focus-within:ring-white/60">
-        <span className="readout">Sort</span>
+      <label
+        className={cn(
+          "slot relative flex h-12 items-center gap-2 pr-3 focus-within:ring-2 focus-within:ring-white/60",
+          compact ? "pl-3" : "pl-4",
+        )}
+      >
+        <span className={cn("readout", compact && "sr-only")}>Sort</span>
         <select
           value={sort}
           onChange={(event) => onSortChange(event.target.value as SortKey)}
           aria-label="Sort Pokémon by"
-          className="cursor-pointer appearance-none bg-transparent pr-4 text-sm font-medium outline-none"
+          className="w-full min-w-0 self-stretch cursor-pointer appearance-none bg-transparent pr-4 text-sm font-medium outline-none"
         >
           {SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -44,7 +53,7 @@ export function SortControl({
         onClick={() => onOrderChange(order === "asc" ? "desc" : "asc")}
         aria-label={order === "asc" ? "Sort descending" : "Sort ascending"}
         title={order === "asc" ? "Ascending" : "Descending"}
-        className="key h-12 w-12 rounded-[10px] border-[3px] hover:brightness-110"
+        className="key h-12 w-12 shrink-0 rounded-[10px] border-[3px] hover:brightness-110"
       >
         {order === "asc" ? (
           <ArrowUpNarrowWide className="h-4 w-4" />

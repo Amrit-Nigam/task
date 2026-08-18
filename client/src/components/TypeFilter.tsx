@@ -27,7 +27,9 @@ export function TypeFilter({
       aria-label="Filter by type"
       className={cn(
         "no-scrollbar flex gap-2 overflow-x-auto pb-1",
-        rail ? "pr-6" : "-mx-4 px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0",
+        rail
+          ? "pr-6"
+          : "-mx-2 px-2 sm:mx-0 sm:flex-wrap sm:gap-1.5 sm:overflow-visible sm:px-0",
       )}
       /* On the rail the row is cut mid-pill at the edge, which reads as broken
          rather than as scrollable. Fading the last few pixels out makes the
@@ -100,7 +102,10 @@ function FilterPill({
          panel-filled with the casing outline. A translucent fill would take
          the casing colour through it and lose contrast on the darker balls. */
       className={cn(
-        "pd-press group inline-flex shrink-0 items-center gap-2 rounded-full border-2 border-[var(--pd-black)] px-3.5 py-1.5 text-sm font-semibold",
+        "pd-press group inline-flex shrink-0 items-center gap-1.5 rounded-full border-2 border-[var(--pd-black)] text-sm font-semibold",
+        /* 44px under a finger, tighter under a mouse — the nineteen types
+           still land in two wrapped rows rather than three. */
+        "min-h-[44px] px-3.5 py-1.5 sm:gap-2 sm:px-3 fine:min-h-0",
         isSelected
           ? "bg-[rgb(var(--type-rgb))]"
           : "bg-surface text-ink hover:bg-[rgb(var(--type-rgb)/0.14)]",

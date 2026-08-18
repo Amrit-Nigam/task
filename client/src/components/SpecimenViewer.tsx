@@ -1,4 +1,7 @@
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { BallLoader } from "@/components/BallLoader";
+import { PokeBall } from "@/components/PokeBall";
+import { useBall } from "@/lib/ballThemes";
 import { formatDexNumber, formatName } from "@/lib/format";
 import { typeVars } from "@/lib/types-theme";
 import { cn } from "@/lib/utils";
@@ -61,7 +64,7 @@ export function SpecimenViewer({
             ratio the child's percentage height resolves against the pre-clamp
             box, so the artwork rendered taller than the screen and was cropped
             by the overflow. */}
-        <div className="screen relative flex h-[clamp(190px,26vh,280px)] w-full items-center justify-center overflow-hidden p-3">
+        <div className="screen relative flex h-[clamp(120px,20vh,280px)] w-full items-center justify-center overflow-hidden p-3">
           {/* Scanline wash — the display is lit, not printed. */}
           <span
             aria-hidden
@@ -90,7 +93,7 @@ export function SpecimenViewer({
               )}
             </>
           ) : isLoading ? (
-            <span className="skeleton h-[70%] w-[70%] rounded-full" />
+            <BallLoader className="h-[46%] max-h-24 min-h-14 w-auto aspect-square" label="Reading" />
           ) : (
             <IdleScreen />
           )}
@@ -105,7 +108,7 @@ export function SpecimenViewer({
       </div>
 
       {/* ---- control cluster, on the casing under the moulding ------------ */}
-      <div className="mt-3 flex items-center gap-3">
+      <div className="mt-3 flex items-stretch gap-3">
         {/* The big round button: it holds the specimen in the collection. */}
         <button
           type="button"
@@ -139,20 +142,24 @@ export function SpecimenViewer({
           </span>
         </div>
 
-        {/* The D-pad. Left/up steps back, right/down steps forward. */}
-        <div className="grid shrink-0 grid-cols-3 grid-rows-3 gap-[2px]" role="group" aria-label="Step through the index">
-          <PadKey className="col-start-2 row-start-1" label="Previous" disabled={!canStepBack} onClick={() => onStep(-1)}>
-            <ChevronUp className="h-3.5 w-3.5" />
+        {/* The rocker that walks the index. It reads as one moulded part, the
+            way the pad does on the device — but laid out along the row rather
+            than as a cross: a three-row cross stands 88px tall, which on a
+            768px-high screen was costing more of the left column than the
+            index list it exists to drive. Nothing is lost with it, since the
+            pad's up and down keys were bound to the same two steps as its
+            left and right. */}
+        <div
+          className="flex shrink-0 items-stretch gap-[2px] overflow-hidden rounded-[8px] border-[2px] border-[var(--pd-black)]"
+          role="group"
+          aria-label="Step through the index"
+        >
+          <PadKey label="Previous entry" disabled={!canStepBack} onClick={() => onStep(-1)}>
+            <ChevronLeft className="h-4 w-4" />
           </PadKey>
-          <PadKey className="col-start-1 row-start-2" label="Previous entry" disabled={!canStepBack} onClick={() => onStep(-1)}>
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </PadKey>
-          <span className="col-start-2 row-start-2 bg-[#26272b]" aria-hidden />
-          <PadKey className="col-start-3 row-start-2" label="Next entry" disabled={!canStepForward} onClick={() => onStep(1)}>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </PadKey>
-          <PadKey className="col-start-2 row-start-3" label="Next" disabled={!canStepForward} onClick={() => onStep(1)}>
-            <ChevronDown className="h-3.5 w-3.5" />
+          <span className="w-2 self-stretch bg-[#26272b]" aria-hidden />
+          <PadKey label="Next entry" disabled={!canStepForward} onClick={() => onStep(1)}>
+            <ChevronRight className="h-4 w-4" />
           </PadKey>
         </div>
       </div>
@@ -165,13 +172,11 @@ function PadKey({
   label,
   onClick,
   disabled,
-  className,
 }: {
   children: React.ReactNode;
   label: string;
   onClick: () => void;
   disabled: boolean;
-  className?: string;
 }) {
   return (
     <button
@@ -180,9 +185,11 @@ function PadKey({
       disabled={disabled}
       aria-label={label}
       className={cn(
-        "grid h-5 w-5 place-items-center bg-[#26272b] text-white/80",
+        /* Full-height keys, 36px wide — comfortably thumb-sized on the
+           landscape tablet where this layout is still in play, against the
+           20px the cross's keys used to be. */
+        "grid w-9 place-items-center self-stretch bg-[#26272b] text-white/80",
         "transition-colors hover:bg-[#3a3c42] disabled:opacity-35 disabled:hover:bg-[#26272b]",
-        className,
       )}
     >
       {children}
@@ -192,14 +199,10 @@ function PadKey({
 
 /** What the screen shows with nothing loaded — a dormant ball, not a blank. */
 function IdleScreen() {
+  const ball = useBall();
   return (
-    <div className="relative z-10 flex flex-col items-center gap-3 opacity-40">
-      <span className="relative h-20 w-20 overflow-hidden rounded-full border-[3px] border-[var(--pd-black)]">
-        <span className="absolute inset-x-0 top-0 h-1/2 bg-[var(--pd-dome)]" />
-        <span className="absolute inset-x-0 bottom-0 h-1/2 bg-[rgb(var(--surface))]" />
-        <span className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 bg-[var(--pd-black)]" />
-        <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[var(--pd-black)] bg-[rgb(var(--surface))]" />
-      </span>
+    <div className="relative z-10 flex flex-col items-center gap-3 opacity-45">
+      <PokeBall ball={ball} className="h-16 w-16" />
       <span className="readout">Select a specimen</span>
     </div>
   );

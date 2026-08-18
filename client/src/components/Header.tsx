@@ -34,7 +34,7 @@ export function Header({
         type="button"
         onClick={onToggleFavoritesOnly}
         aria-pressed={showFavoritesOnly}
-        className={cn(button, "h-10 px-3")}
+        className={cn(button, "h-11 px-3")}
         style={
           showFavoritesOnly
             ? { background: "var(--pd-accent)", color: "var(--pd-accent-ink)" }
@@ -50,7 +50,7 @@ export function Header({
         type="button"
         onClick={onToggleTheme}
         aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-        className={cn(button, "h-10 w-10")}
+        className={cn(button, "h-11 w-11")}
         style={{ background: "rgb(var(--surface))", color: "rgb(var(--ink))" }}
       >
         {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

@@ -45,8 +45,10 @@ export function PokemonCard({
         }}
       />
 
-      <div className="flex items-start justify-between px-5 pt-5">
-        <span className="readout text-[11px] tracking-[0.18em]">{formatDexNumber(id)}</span>
+      <div className="flex items-start justify-between px-3 pt-3 sm:px-5 sm:pt-5">
+        <span className="readout text-[10px] tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em]">
+          {formatDexNumber(id)}
+        </span>
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -58,7 +60,7 @@ export function PokemonCard({
                 : `Add ${formatName(name)} to compare`
             }
             className={cn(
-              "relative z-20 grid h-8 w-8 place-items-center rounded-full transition-colors",
+              "relative z-20 grid h-9 w-9 place-items-center rounded-full transition-colors coarse:h-10 coarse:w-10",
               isSelectedForCompare
                 ? "bg-ink text-canvas"
                 : "text-muted/70 hover:bg-ink/[0.06] hover:text-ink",
@@ -74,7 +76,7 @@ export function PokemonCard({
               isFavorite ? `Unfavorite ${formatName(name)}` : `Favorite ${formatName(name)}`
             }
             className={cn(
-              "relative z-20 grid h-8 w-8 place-items-center rounded-full transition-colors",
+              "relative z-20 grid h-9 w-9 place-items-center rounded-full transition-colors coarse:h-10 coarse:w-10",
               isFavorite
                 ? "text-signal"
                 : "text-muted hover:bg-ink/[0.06] hover:text-ink",
@@ -86,8 +88,8 @@ export function PokemonCard({
       </div>
 
       {/* Containment halo — the card's signature element. */}
-      <div className="relative mx-auto grid h-40 w-full place-items-center">
-        <div className="halo absolute inset-x-6 inset-y-0 rounded-full" aria-hidden />
+      <div className="relative mx-auto grid h-28 w-full place-items-center sm:h-40">
+        <div className="halo absolute inset-x-4 inset-y-0 rounded-full sm:inset-x-6" aria-hidden />
         <div
           className="halo-ring inset-y-1 aspect-square group-hover:scale-[1.07]"
           aria-hidden
@@ -104,15 +106,15 @@ export function PokemonCard({
             decoding="async"
             width={160}
             height={160}
-            className="relative z-10 h-32 w-32 object-contain drop-shadow-[0_10px_18px_rgb(var(--type-rgb)/0.35)] transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-105"
+            className="relative z-10 h-24 w-24 object-contain sm:h-32 sm:w-32 drop-shadow-[0_10px_18px_rgb(var(--type-rgb)/0.35)] transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-105"
           />
         ) : (
           <span className="readout relative z-10">No artwork</span>
         )}
       </div>
 
-      <div className="px-5 pb-5">
-        <h3 className="font-display text-xl font-bold leading-tight tracking-tight">
+      <div className="px-3 pb-3 sm:px-5 sm:pb-5">
+        <h3 className="font-display text-base font-bold leading-tight tracking-tight sm:text-xl">
           {/* Stretched link keeps the whole card clickable while the buttons
               above stay independently focusable. */}
           <Link
@@ -123,13 +125,13 @@ export function PokemonCard({
           </Link>
         </h3>
 
-        <div className="mt-2.5 flex flex-wrap gap-1.5">
+        <div className="mt-2 flex flex-wrap gap-1 sm:mt-2.5 sm:gap-1.5">
           {types.map((type) => (
             <TypeChip key={type} type={type} />
           ))}
         </div>
 
-        <dl className="mt-4 grid grid-cols-3 gap-2 border-t-2 border-[var(--pd-black)] pt-3">
+        <dl className="mt-3 grid grid-cols-3 gap-1 border-t-2 border-[var(--pd-black)] pt-2.5 sm:mt-4 sm:gap-2 sm:pt-3">
           {(
             [
               ["HP", stats.hp],
@@ -137,9 +139,18 @@ export function PokemonCard({
               ["SPD", stats.speed],
             ] as const
           ).map(([label, value]) => (
-            <div key={label} className="flex items-baseline gap-1.5">
-              <dt className="readout">{label}</dt>
-              <dd className="font-mono text-sm font-medium tabular-nums">{value}</dd>
+            /* Stacked on the 2-up phone card: laid out inline, the three
+               label/value pairs are each wider than their column and the
+               value runs into the next label. Inline again from `sm`, where
+               the column is wide enough to hold the pair on one line. */
+            <div
+              key={label}
+              className="flex min-w-0 flex-col gap-0 sm:flex-row sm:items-baseline sm:gap-1.5"
+            >
+              <dt className="readout text-[9px] tracking-[0.1em] sm:text-[10px] sm:tracking-[0.16em]">
+                {label}
+              </dt>
+              <dd className="font-mono text-xs font-medium tabular-nums sm:text-sm">{value}</dd>
             </div>
           ))}
         </dl>

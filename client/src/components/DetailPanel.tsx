@@ -1,5 +1,6 @@
 import { Heart, X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { BallLoader } from "@/components/BallLoader";
 import { EntryData } from "@/components/EntryData";
 import { Button } from "@/components/ui/button";
 import { usePokemonDetail } from "@/hooks/usePokemonDetail";
@@ -57,9 +58,9 @@ export function DetailPanel({ name, onClose, isFavorite, onToggleFavorite }: Det
         tabIndex={-1}
         style={detail ? typeVars(detail.types) : undefined}
         className={cn(
-          "relative z-10 flex w-full flex-col overflow-y-auto bg-surface shadow-panel outline-none",
+          "relative z-10 flex w-full flex-col overflow-y-auto overscroll-contain bg-surface shadow-panel outline-none",
           isCompact
-            ? "mt-16 animate-sheet-in rounded-t-[26px]"
+            ? "mt-10 animate-sheet-in rounded-t-[26px] sm:mt-16"
             : "max-w-[540px] animate-drawer-in border-l-[3px] border-[var(--pd-black)]",
         )}
       >
@@ -70,10 +71,10 @@ export function DetailPanel({ name, onClose, isFavorite, onToggleFavorite }: Det
           canFavorite={Boolean(detail)}
         />
 
-        <div className="halo relative grid place-items-center px-6 pb-2 pt-4">
+        <div className="halo relative grid place-items-center px-4 pb-2 pt-4 sm:px-6">
           {detail ? (
             <>
-              <span className="readout absolute left-6 top-4 text-[11px]">
+              <span className="readout absolute left-4 top-4 text-[11px] sm:left-6">
                 {formatDexNumber(detail.id)}
               </span>
               {detail.sprite ? (
@@ -82,16 +83,18 @@ export function DetailPanel({ name, onClose, isFavorite, onToggleFavorite }: Det
                   alt={formatName(detail.name)}
                   width={260}
                   height={260}
-                  className="h-52 w-52 object-contain drop-shadow-[0_18px_28px_rgb(var(--type-rgb)/0.4)] sm:h-60 sm:w-60"
+                  className="h-40 w-40 object-contain drop-shadow-[0_18px_28px_rgb(var(--type-rgb)/0.4)] sm:h-56 sm:w-56 md:h-60 md:w-60"
                 />
               ) : null}
             </>
           ) : (
-            <span className="skeleton h-52 w-52 rounded-full" />
+            <div className="grid h-40 w-40 place-items-center sm:h-56 sm:w-56 md:h-60 md:w-60">
+              <BallLoader className="h-24 w-24 sm:h-28 sm:w-28" />
+            </div>
           )}
         </div>
 
-        <div className="px-6 pb-10">
+        <div className="px-4 pb-10 sm:px-6">
           <EntryData
             detail={detail}
             status={status}
