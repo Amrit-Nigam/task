@@ -2,29 +2,28 @@ import type { ReactNode } from "react";
 import { BallSwitcher } from "@/components/BallSwitcher";
 
 interface DeviceShellProps {
-  /** The device's own chrome — search, filters, sort. Sits on the bezel. */
-  controls?: ReactNode;
   /** Right side of the bezel — favourites, night mode. */
   actions?: ReactNode;
   /** Line under the wordmark: species count, current filter. */
   status?: ReactNode;
+  /** Everything below the hinge. The caller owns its own screens. */
   children: ReactNode;
 }
 
 /**
  * The casing the whole application is moulded into.
  *
- * Everything above the screen is the bezel: the big blue lamp, the three
- * indicator LEDs beside it, the wordmark, and the hinge ridge that closes the
- * assembly off. Below it, the content sits on a single lit display — which is
- * why the grid and the panels inside it read as one instrument rather than as
- * a page of cards.
+ * Above the hinge is the bezel: the big blue lamp, the three indicator LEDs
+ * beside it, the wordmark, and the ridge that closes the assembly off. What
+ * sits below the hinge belongs to the caller — on desktop the device opens
+ * into two halves, the specimen screen on one side and the record on the
+ * other, which is why this component owns no display of its own.
  *
  * The casing is deliberately *not* a background image or a border-radius on
  * the body: it is a real plate with its own outline and offset shadow, so the
  * screen inside it is visibly recessed into something.
  */
-export function DeviceShell({ controls, actions, status, children }: DeviceShellProps) {
+export function DeviceShell({ actions, status, children }: DeviceShellProps) {
   return (
     <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-7">
       <div
@@ -90,11 +89,7 @@ export function DeviceShell({ controls, actions, status, children }: DeviceShell
             from the screen below it. */}
         <div className="ridge mt-3 h-2.5" aria-hidden />
 
-        {/* ---- controls, on the casing under the hinge ------------------ */}
-        {controls ? <div className="mt-3">{controls}</div> : null}
-
-        {/* ---- the lit display ------------------------------------------ */}
-        <div className="screen mt-3 p-3 sm:p-5">{children}</div>
+        <div className="mt-3">{children}</div>
       </div>
     </div>
   );

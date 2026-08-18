@@ -2,20 +2,25 @@ import { Loader2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CompareDialog } from "@/components/CompareDialog";
-import { DeviceShell } from "@/components/DeviceShell";
 import { CompareTray } from "@/components/CompareTray";
 import { DetailPanel } from "@/components/DetailPanel";
+import { DeviceShell } from "@/components/DeviceShell";
 import { EmptyState } from "@/components/EmptyState";
+import { EntryData } from "@/components/EntryData";
 import { ErrorState } from "@/components/ErrorState";
 import { Header } from "@/components/Header";
+import { IndexList } from "@/components/IndexList";
 import { PokemonGrid } from "@/components/PokemonGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { SortControl } from "@/components/SortControl";
+import { SpecimenViewer } from "@/components/SpecimenViewer";
 import { TypeFilter } from "@/components/TypeFilter";
 import { Button } from "@/components/ui/button";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useFavoritePokemon } from "@/hooks/useFavoritePokemon";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { usePokemonDetail } from "@/hooks/usePokemonDetail";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { useTheme } from "@/hooks/useTheme";
 import { useTypes } from "@/hooks/useTypes";
@@ -30,6 +35,10 @@ export function ExplorerPage() {
   const { theme, toggleTheme } = useTheme();
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
   const { types, total: dexTotal } = useTypes();
+
+  // Below this width the device cannot be opened side by side, so the index
+  // becomes a full-width list and the record returns to a bottom sheet.
+  const isCompact = useMediaQuery("(max-width: 1023px)");
 
   const [searchInput, setSearchInput] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
@@ -77,6 +86,13 @@ export function ExplorerPage() {
   const isInitialLoading = showFavoritesOnly ? favoriteList.isLoading : list.status === "loading";
   const isEmpty = !isInitialLoading && results.length === 0;
 
+  // On the open device something is always on the screen: the URL's pick if
+  // there is one, otherwise the first row of the current result set. The
+  // fallback is display-only — it never rewrites the URL, so a shared link
+  // still means exactly what it says and the back button stays honest.
+  const viewedName = selectedName ?? (isCompact ? null : (results[0]?.name ?? null));
+  const viewed = usePokemonDetail(viewedName);
+
   const toggleCompare = useCallback((pokemon: PokemonSummary) => {
     setCompareSelection((current) => {
       const without = current.filter((entry) => entry.name !== pokemon.name);
@@ -103,6 +119,68 @@ export function ExplorerPage() {
       ? `${results.length} favorite${results.length === 1 ? "" : "s"}`
       : `${list.total} result${list.total === 1 ? "" : "s"}`;
 
+  const controls = (
+    <div className="shrink-0 space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <SearchBar value={searchInput} onChange={setSearchInput} />
+        <SortControl
+          sort={sort}
+          order={order}
+          onSortChange={setSort}
+          onOrderChange={setOrder}
+          className="shrink-0"
+        />
+      </div>
+      <TypeFilter
+        types={types}
+        selected={selectedType}
+        onSelect={setSelectedType}
+        totalCount={dexTotal}
+        rail={!isCompact}
+      />
+    </div>
+  );
+
+  const isSelectedForCompare = (name: string) =>
+    compareSelection.some((entry) => entry.name === name);
+  const hasMore = !showFavoritesOnly && list.hasMore && list.status !== "error";
+
+  /* Shown in place of the index when there is nothing to list. */
+  const notice =
+    isEmpty ? (
+      <div className="screen shrink-0 p-5">
+        {showFavoritesOnly && favorites.size === 0 ? (
+          <EmptyStateFavorites onBrowse={() => setShowFavoritesOnly(false)} />
+        ) : (
+          <EmptyState query={searchInput} type={selectedType} onClear={clearFilters} />
+        )}
+      </div>
+    ) : list.status === "error" && list.error && !showFavoritesOnly ? (
+      <div className="screen shrink-0 p-5">
+        <ErrorState message={list.error.message} onRetry={list.retry} />
+      </div>
+    ) : null;
+
+  /* The open device lists rows — at 380px a card grid would fit two across and
+     turn the left half into artwork, which is the viewer's job. Closed, there
+     is no viewer to compete with, so the phone keeps the card grid. */
+  const indexPane =
+    notice ?? (
+      <IndexList
+        pokemon={results}
+        activeName={viewedName}
+        isLoading={isInitialLoading}
+        isFavorite={isFavorite}
+        onToggleFavorite={toggleFavorite}
+        isSelectedForCompare={isSelectedForCompare}
+        onToggleCompare={toggleCompare}
+        hasMore={hasMore}
+        isLoadingMore={list.status === "loading-more"}
+        onLoadMore={list.loadMore}
+        total={list.total}
+      />
+    );
+
   return (
     <div className="min-h-dvh pb-28">
       <DeviceShell
@@ -110,7 +188,7 @@ export function ExplorerPage() {
           <>
             {statusLine}
             {selectedType ? ` · ${selectedType}` : ""}
-            {!showFavoritesOnly && list.total > 0 ? ` · ${list.total} indexed` : ""}
+            {showFavoritesOnly ? " · favorites" : ""}
           </>
         }
         actions={
@@ -122,78 +200,83 @@ export function ExplorerPage() {
             onToggleFavoritesOnly={() => setShowFavoritesOnly((current) => !current)}
           />
         }
-        controls={
+      >
+        {isCompact ? (
+          /* Closed: one column. The record opens as a sheet over it. */
           <div className="space-y-3">
-            <div className="flex flex-col gap-3 md:flex-row">
-              <SearchBar value={searchInput} onChange={setSearchInput} />
-              <SortControl
-                sort={sort}
-                order={order}
-                onSortChange={setSort}
-                onOrderChange={setOrder}
-                className="shrink-0"
+            {controls}
+            {notice ?? (
+              <div className="screen p-3">
+                <PokemonGrid
+                  pokemon={results}
+                  isLoading={isInitialLoading || list.status === "loading-more"}
+                  skeletonCount={list.pageSize / 2}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={toggleFavorite}
+                  isSelectedForCompare={isSelectedForCompare}
+                  onToggleCompare={toggleCompare}
+                />
+
+                {hasMore ? (
+                  <div className="mt-8 flex flex-col items-center gap-2">
+                    <Button
+                      variant="solid"
+                      onClick={list.loadMore}
+                      disabled={list.status === "loading-more"}
+                    >
+                      {list.status === "loading-more" ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading
+                        </>
+                      ) : (
+                        "Load more"
+                      )}
+                    </Button>
+                    <p className="readout">
+                      {results.length} of {list.total}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Open: the two halves, hinged down the middle. Each scrolls in its
+             own right, so reading the record never scrolls the index away. */
+          <div className="grid grid-cols-[minmax(0,380px)_minmax(0,1fr)] items-start gap-4 xl:grid-cols-[minmax(0,440px)_minmax(0,1fr)]">
+            <div className="flex h-[calc(100dvh-13rem)] min-h-[40rem] flex-col gap-3">
+              <SpecimenViewer
+                detail={viewed.detail}
+                isLoading={viewed.status === "loading" && Boolean(viewedName)}
+                isFavorite={viewed.detail ? isFavorite(viewed.detail.name) : false}
+                onToggleFavorite={toggleFavorite}
               />
+              {controls}
+              {indexPane}
             </div>
 
-            <TypeFilter
-              types={types}
-              selected={selectedType}
-              onSelect={setSelectedType}
-              totalCount={dexTotal}
-            />
-          </div>
-        }
-      >
-        {list.indexing && STAT_SORTS.includes(sort) && !showFavoritesOnly ? (
-          <p className="mb-4 flex items-center gap-2 text-xs text-muted">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Building the stat index — ordering will settle shortly.
-          </p>
-        ) : null}
+            <div className="screen h-[calc(100dvh-13rem)] min-h-[40rem] overflow-y-auto p-5 xl:p-7">
+              {list.indexing && STAT_SORTS.includes(sort) && !showFavoritesOnly ? (
+                <p className="mb-5 flex items-center gap-2 text-xs text-muted">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Building the stat index — ordering will settle shortly.
+                </p>
+              ) : null}
 
-        {list.status === "error" && list.error && !showFavoritesOnly ? (
-          <ErrorState message={list.error.message} onRetry={list.retry} />
-        ) : isEmpty ? (
-          showFavoritesOnly && favorites.size === 0 ? (
-            <EmptyStateFavorites onBrowse={() => setShowFavoritesOnly(false)} />
-          ) : (
-            <EmptyState query={searchInput} type={selectedType} onClear={clearFilters} />
-          )
-        ) : (
-          <PokemonGrid
-            pokemon={results}
-            isLoading={isInitialLoading || list.status === "loading-more"}
-            skeletonCount={list.pageSize / 2}
-            isFavorite={isFavorite}
-            onToggleFavorite={toggleFavorite}
-            isSelectedForCompare={(name) =>
-              compareSelection.some((entry) => entry.name === name)
-            }
-            onToggleCompare={toggleCompare}
-          />
-        )}
-
-        {!showFavoritesOnly && list.hasMore && list.status !== "error" ? (
-          <div className="mt-10 flex flex-col items-center gap-2">
-            <Button
-              variant="solid"
-              onClick={list.loadMore}
-              disabled={list.status === "loading-more"}
-            >
-              {list.status === "loading-more" ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading
-                </>
+              {viewedName ? (
+                <EntryData
+                  detail={viewed.detail}
+                  status={viewed.status}
+                  error={viewed.error}
+                  onRetry={viewed.retry}
+                />
               ) : (
-                "Load more"
+                <p className="readout">No specimen selected</p>
               )}
-            </Button>
-            <p className="readout">
-              {results.length} of {list.total}
-            </p>
+            </div>
           </div>
-        ) : null}
+        )}
       </DeviceShell>
 
       <CompareTray
@@ -209,7 +292,9 @@ export function ExplorerPage() {
         <CompareDialog pair={comparePair} onClose={() => setIsCompareOpen(false)} />
       ) : null}
 
-      {selectedName ? (
+      {/* Only while the device is closed. Opened, the record is already on the
+          right half — putting a sheet over it would cover the thing it shows. */}
+      {isCompact && selectedName ? (
         <DetailPanel
           name={selectedName}
           onClose={() => navigate("/", { replace: false })}
@@ -223,7 +308,7 @@ export function ExplorerPage() {
 
 function EmptyStateFavorites({ onBrowse }: { onBrowse: () => void }) {
   return (
-    <div className="panel flex flex-col items-center gap-4 px-6 py-16 text-center">
+    <div className="flex flex-col items-center gap-4 px-6 py-16 text-center">
       <span className="text-3xl" aria-hidden>
         ♡
       </span>

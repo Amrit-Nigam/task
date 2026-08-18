@@ -1,0 +1,22 @@
+{
+  "name": "pokedex-explorer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A Pokémon explorer built on the PokéAPI: a React client and a caching Express API.",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "concurrently -n server,client -c magenta,cyan \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:client": "npm run dev --workspace @pokedex/client",
+    "dev:server": "npm run dev --workspace @pokedex/server",
+    "build": "npm run build --workspace @pokedex/server && npm run build --workspace @pokedex/client",
+    "start": "npm run start --workspace @pokedex/server",
+    "lint": "npm run lint --workspace @pokedex/client",
+    "typecheck": "npm run typecheck --workspace @pokedex/client && npm run typecheck --workspace @pokedex/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

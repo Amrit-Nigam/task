@@ -8,15 +8,40 @@ interface TypeFilterProps {
   selected: string | null;
   onSelect: (type: string | null) => void;
   totalCount: number;
+  /** Keep every pill on one scrolling row — for the device's narrow half,
+      where wrapping 19 pills would eat the index list's height. */
+  rail?: boolean;
 }
 
 /** A horizontally scrolling rail of type filters, each in its own hue. */
-export function TypeFilter({ types, selected, onSelect, totalCount }: TypeFilterProps) {
+export function TypeFilter({
+  types,
+  selected,
+  onSelect,
+  totalCount,
+  rail = false,
+}: TypeFilterProps) {
   return (
     <div
       role="group"
       aria-label="Filter by type"
-      className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+      className={cn(
+        "no-scrollbar flex gap-2 overflow-x-auto pb-1",
+        rail ? "pr-6" : "-mx-4 px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0",
+      )}
+      /* On the rail the row is cut mid-pill at the edge, which reads as broken
+         rather than as scrollable. Fading the last few pixels out makes the
+         cut deliberate and shows there is more to reach. */
+      style={
+        rail
+          ? {
+              maskImage:
+                "linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%)",
+            }
+          : undefined
+      }
     >
       <FilterPill
         label="All"

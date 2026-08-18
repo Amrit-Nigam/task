@@ -1,30 +1,12 @@
-import { Heart, Ruler, Sparkles, Weight, X } from "lucide-react";
+import { Heart, X } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { StatMeter } from "@/components/StatMeter";
-import { TypeChip } from "@/components/TypeChip";
-import { ErrorState } from "@/components/ErrorState";
+import { EntryData } from "@/components/EntryData";
 import { Button } from "@/components/ui/button";
 import { usePokemonDetail } from "@/hooks/usePokemonDetail";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import {
-  formatDexNumber,
-  formatHeight,
-  formatName,
-  formatWeight,
-  humanise,
-} from "@/lib/format";
+import { formatDexNumber, formatName } from "@/lib/format";
 import { typeVars } from "@/lib/types-theme";
 import { cn } from "@/lib/utils";
-import { STAT_LABELS, type StatKey } from "@/types/pokemon";
-
-const STAT_ORDER: StatKey[] = [
-  "hp",
-  "attack",
-  "defense",
-  "specialAttack",
-  "specialDefense",
-  "speed",
-];
 
 interface DetailPanelProps {
   name: string;
@@ -88,25 +70,9 @@ export function DetailPanel({ name, onClose, isFavorite, onToggleFavorite }: Det
           canFavorite={Boolean(detail)}
         />
 
-        {status === "loading" ? <DetailSkeleton /> : null}
-
-        {status === "error" && error ? (
-          <div className="p-5">
-            <ErrorState
-              title={error.isNotFound ? "Pokémon not found." : "Something went wrong."}
-              message={
-                error.isNotFound
-                  ? "Try searching for another Pokémon."
-                  : error.message
-              }
-              onRetry={error.isNotFound ? undefined : retry}
-            />
-          </div>
-        ) : null}
-
-        {status === "ready" && detail ? (
-          <>
-            <div className="halo relative grid place-items-center px-6 pb-2 pt-4">
+        <div className="halo relative grid place-items-center px-6 pb-2 pt-4">
+          {detail ? (
+            <>
               <span className="readout absolute left-6 top-4 text-[11px]">
                 {formatDexNumber(detail.id)}
               </span>
@@ -119,94 +85,20 @@ export function DetailPanel({ name, onClose, isFavorite, onToggleFavorite }: Det
                   className="h-52 w-52 object-contain drop-shadow-[0_18px_28px_rgb(var(--type-rgb)/0.4)] sm:h-60 sm:w-60"
                 />
               ) : null}
-            </div>
+            </>
+          ) : (
+            <span className="skeleton h-52 w-52 rounded-full" />
+          )}
+        </div>
 
-            <div className="space-y-7 px-6 pb-10">
-              <header className="space-y-3">
-                <h2 className="font-display text-[2rem] font-bold leading-none tracking-tight">
-                  {formatName(detail.name)}
-                </h2>
-                {detail.genus ? (
-                  <p className="readout text-[11px]">{detail.genus}</p>
-                ) : null}
-                <div className="flex flex-wrap gap-2">
-                  {detail.types.map((type) => (
-                    <TypeChip key={type} type={type} size="md" />
-                  ))}
-                </div>
-              </header>
-
-              {detail.description ? (
-                <p className="text-[15px] leading-relaxed text-muted">{detail.description}</p>
-              ) : null}
-
-              <dl className="grid grid-cols-3 gap-3">
-                <Measure icon={<Ruler className="h-4 w-4" />} label="Height" value={formatHeight(detail.height)} />
-                <Measure icon={<Weight className="h-4 w-4" />} label="Weight" value={formatWeight(detail.weight)} />
-                <Measure
-                  icon={<Sparkles className="h-4 w-4" />}
-                  label="Base exp"
-                  value={detail.baseExperience === null ? "—" : String(detail.baseExperience)}
-                />
-              </dl>
-
-              <Section title="Base stats">
-                <div className="space-y-2.5">
-                  {STAT_ORDER.map((key) => (
-                    <StatMeter key={key} label={STAT_LABELS[key]} value={detail.stats[key]} />
-                  ))}
-                  <div className="flex items-center justify-between border-t-2 border-[var(--pd-black)] pt-3">
-                    <span className="readout">Total</span>
-                    <span className="font-mono text-sm font-medium tabular-nums">
-                      {STAT_ORDER.reduce((sum, key) => sum + detail.stats[key], 0)}
-                    </span>
-                  </div>
-                </div>
-              </Section>
-
-              <Section title="Abilities">
-                <ul className="flex flex-wrap gap-2">
-                  {detail.abilities.map((ability) => (
-                    <li
-                      key={ability.name}
-                      className="flex items-center gap-2 rounded-full border border-edge bg-raised px-3.5 py-1.5 text-sm"
-                    >
-                      {humanise(ability.name)}
-                      {ability.isHidden ? (
-                        <span className="readout text-[9px]">Hidden</span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </Section>
-
-              <Section title={`Moves · ${detail.moveCount} total`}>
-                {detail.moves.length > 0 ? (
-                  <ul className="divide-y divide-edge overflow-hidden rounded-xl border border-edge">
-                    {detail.moves.map((move) => (
-                      <li
-                        key={move.name}
-                        className="flex items-center justify-between bg-raised px-4 py-2.5 text-sm"
-                      >
-                        <span>{humanise(move.name)}</span>
-                        <span className="readout">
-                          {move.learnedAtLevel > 0 ? `Lv ${move.learnedAtLevel}` : "Start"}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted">
-                    This Pokémon learns no moves by levelling up.
-                  </p>
-                )}
-                <p className="mt-3 text-xs text-muted">
-                  Showing the first {detail.moves.length} level-up moves.
-                </p>
-              </Section>
-            </div>
-          </>
-        ) : null}
+        <div className="px-6 pb-10">
+          <EntryData
+            detail={detail}
+            status={status}
+            error={error}
+            onRetry={retry}
+          />
+        </div>
       </div>
     </div>
   );
@@ -246,58 +138,3 @@ function PanelHeader({
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <h3 className="readout">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-function Measure({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-xl border border-edge bg-raised px-3 py-3">
-      <dt className="readout flex items-center gap-1.5">
-        <span className="text-muted">{icon}</span>
-        {label}
-      </dt>
-      <dd className="mt-1.5 font-mono text-base font-medium tabular-nums">{value}</dd>
-    </div>
-  );
-}
-
-function DetailSkeleton() {
-  return (
-    <div className="space-y-7 p-6">
-      <div className="skeleton mx-auto h-52 w-52 rounded-full" />
-      <div className="space-y-3">
-        <div className="skeleton h-8 w-48 rounded" />
-        <div className="skeleton h-3 w-32 rounded" />
-        <div className="flex gap-2">
-          <div className="skeleton h-7 w-24 rounded-full" />
-          <div className="skeleton h-7 w-20 rounded-full" />
-        </div>
-      </div>
-      <div className="skeleton h-16 w-full rounded-xl" />
-      <div className="grid grid-cols-3 gap-3">
-        <div className="skeleton h-[68px] rounded-xl" />
-        <div className="skeleton h-[68px] rounded-xl" />
-        <div className="skeleton h-[68px] rounded-xl" />
-      </div>
-      <div className="space-y-2.5">
-        {Array.from({ length: 6 }, (_, index) => (
-          <div key={index} className="skeleton h-6 w-full rounded" />
-        ))}
-      </div>
-    </div>
-  );
-}

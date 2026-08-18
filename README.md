@@ -62,10 +62,28 @@ a moulded part or a lit screen: hard black outlines, flat offset shadows, no blu
 glow in the chrome. Depth comes from the offsets, the way it does on moulded plastic.
 Buttons travel *into* their own shadow when pressed rather than dimming.
 
-Above the hinge ridge sits the bezel — the scanner lens, the three indicator LEDs, the
-wordmark stamped into the casing, and the controls. Below it, the whole index sits on a
-single lit display, which is what makes the grid read as one instrument rather than as a
-list of separate cards.
+Above the hinge ridge sits the bezel — the scanner lens, the three indicator LEDs and the
+wordmark stamped into the casing.
+
+Below the hinge the device **opens into two halves**, the way a Pokédex does: the
+specimen on one side, the record on the other.
+
+- **Left — the viewer.** One lit screen showing the selected Pokémon large, under its own
+  type halo and a faint scanline wash, with the dex number, name and types stamped
+  beneath. Under it sit the search, sort and type controls, then the index itself as a
+  scrolling list of rows. Rows rather than cards here: at this width a grid would fit two
+  across and turn the whole half into artwork, which is the viewer's job.
+- **Right — the record.** Description, height, weight, base experience, the segmented
+  base-stat meters, abilities and level-up moves.
+
+Each half scrolls independently, so reading the record never scrolls the index away, and
+selecting a row swaps the viewer and the record together. With nothing picked the device
+falls back to the first row of the current result set, so it is never showing a blank
+screen — the fallback is display-only and never rewrites the URL, so a shared
+`/pokemon/pikachu` link still means exactly what it says.
+
+Below 1024px the device closes: the index becomes the full-width card grid and the record
+returns to a bottom sheet, since two halves will not fit side by side on a phone.
 
 ### Casings
 
