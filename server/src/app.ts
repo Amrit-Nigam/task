@@ -7,7 +7,15 @@ import { pokemonRouter } from "./routes/pokemon.js";
 export function createApp() {
   const app = express();
 
-  app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") ?? true }));
+  /* Origins arrive as a comma-separated env value and are compared verbatim
+     against the browser's `Origin` header, which never carries a trailing
+     slash. Normalise so a stray slash or space in config is not a silent
+     CORS failure at runtime. */
+  const allowedOrigins = process.env.CORS_ORIGIN?.split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+  app.use(cors({ origin: allowedOrigins?.length ? allowedOrigins : true }));
   app.disable("x-powered-by");
 
   /* Mounted at both paths. `/health` is where a platform probe looks by

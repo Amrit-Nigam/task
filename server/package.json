@@ -5,19 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "prebuild": "npm ci --include=dev",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.2"
-  },
-  "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^24.10.1",
-    "tsx": "^4.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
     "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.3"
   }
 }
