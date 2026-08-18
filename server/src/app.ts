@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { ApiError } from "./lib/errors.js";
+import { healthRouter } from "./routes/health.js";
 import { pokemonRouter } from "./routes/pokemon.js";
 
 export function createApp() {
@@ -9,9 +10,11 @@ export function createApp() {
   app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") ?? true }));
   app.disable("x-powered-by");
 
-  app.get("/health", (_request, response) => {
-    response.json({ status: "ok" });
-  });
+  /* Mounted at both paths. `/health` is where a platform probe looks by
+     default; `/api/health` is what the browser can reach when the client is
+     served from another origin and only `/api` is proxied through to here. */
+  app.use("/health", healthRouter);
+  app.use("/api/health", healthRouter);
 
   app.use("/api", pokemonRouter);
 

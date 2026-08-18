@@ -163,7 +163,15 @@ The client never calls PokéAPI directly. It talks to this project's API, which:
 | `GET` | `/api/pokemon` | Paged list. Query: `offset`, `limit` (≤60), `type`, `q`, `sort`, `order` |
 | `GET` | `/api/pokemon/:nameOrId` | Full record for one Pokémon |
 | `GET` | `/api/types` | All types with counts, plus the total species count |
-| `GET` | `/health` | Liveness check |
+| `GET` | `/health` | Liveness. Always 200 while the process is up; never calls PokéAPI |
+| `GET` | `/health/ready` | Readiness. 200 once the stat index is warm, 503 (`degraded`) while it warms |
+
+Both are also mounted under `/api` (`/api/health`, `/api/health/ready`) so a browser can
+reach them when only `/api` is proxied through to the server.
+
+Point a platform health check at **`/health`**, not `/health/ready` — warming fetches all
+1,025 species and takes minutes on a cold instance, far longer than a default
+health-check grace period, so a readiness probe would fail the deploy.
 
 ## Installation
 
@@ -205,6 +213,77 @@ cd server && npm start           # run the built server
 
 Environment variables are documented in `client/.env.example` and `server/.env.example`.
 For a deployed client, set `VITE_API_BASE` to the API's origin.
+
+## Deployment
+
+The two halves want different hosts, and the reason is in the server's design rather than
+in a preference: it warms an index of all 1,025 species at boot and keeps that index, plus
+a 24-hour detail cache, in process memory. That is the whole basis for filtering and stat
+sorting across the entire Pokédex rather than across the loaded page. On a serverless
+platform each invocation may land on a fresh instance, so the cache would rarely be hit,
+the warm-up would restart on every cold boot, and it would be killed by the function
+timeout long before it finished.
+
+**So: the client goes on Vercel as a static site, and the server goes on a host that runs
+a long-lived process** — Render, Railway and Fly.io all do this on a free or cheap tier.
+Deploying the server as Vercel functions would technically respond, but every stat sort
+would re-fetch the Pokédex from upstream.
+
+### Client → Vercel
+
+Import the repository and set **Root Directory** to `client`. `client/vercel.json` supplies
+the rest — build command, output directory, the SPA rewrite that makes `/pokemon/pikachu`
+resolve on a hard refresh, and cache headers (immutable for hashed assets, revalidate for
+`index.html`).
+
+One environment variable, for every environment you use:
+
+| Variable | Value |
+| --- | --- |
+| `VITE_API_BASE` | `https://your-api.onrender.com` — the API's origin, no trailing slash, no `/api` |
+
+`VITE_API_BASE` is read by Vite at **build** time and inlined into the bundle, so changing
+it in the dashboard does nothing until you redeploy. It is also the only client variable
+that ships: anything named `VITE_*` is public, so never put a secret in one.
+
+### Server → Render / Railway / Fly.io
+
+Root directory `server`, and:
+
+```
+Build command:  npm ci && npm run build
+Start command:  npm start
+Health check:   /health
+```
+
+| Variable | Required | Value |
+| --- | --- | --- |
+| `PORT` | usually not | The host injects it; the server reads `process.env.PORT` and falls back to 4000. Do not hard-code it |
+| `CORS_ORIGIN` | yes | Comma-separated origins allowed to call the API, e.g. `https://your-pokedex.vercel.app`. **Unset means any origin** |
+| `POKEAPI_BASE_URL` | no | Only if you mirror or proxy PokéAPI. Defaults to `https://pokeapi.co/api/v2` |
+
+Two things that bite here:
+
+- **Vercel preview deployments get their own hostname** (`project-git-branch-user.vercel.app`),
+  so a `CORS_ORIGIN` listing only the production domain blocks every preview. Either add the
+  preview hostnames, or leave `CORS_ORIGIN` unset — this is a public, read-only, unauthenticated
+  API over public data, so allowing any origin costs nothing. Do not leave it unset out of
+  habit on a service that ever gains writes or auth.
+- **Free tiers idle out.** Render's free instances sleep after inactivity, and waking one
+  re-runs the boot warm-up, so the first stat sort after a long quiet period is slow. The
+  UI already handles this honestly — it shows "Building the stat index — ordering will
+  settle shortly" while `/health/ready` reports `degraded`.
+
+### Checking a deployment
+
+```bash
+curl https://your-api.onrender.com/health          # {"status":"ok", ...}
+curl https://your-api.onrender.com/health/ready    # 503 -> 200 once warm
+curl https://your-api.onrender.com/api/types       # real data
+
+# the client is wired to the right API if this returns JSON, not HTML
+curl -I https://your-pokedex.vercel.app/pokemon/pikachu   # 200, not 404
+```
 
 ## Project Structure
 

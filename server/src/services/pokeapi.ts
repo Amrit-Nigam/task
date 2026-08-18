@@ -295,6 +295,29 @@ export function isIndexWarm() {
   return warmState === "done";
 }
 
+/**
+ * What the service is holding, for the health probe.
+ *
+ * Reported rather than recomputed: every value here is already in memory, so
+ * the probe stays a constant-time read and never touches the upstream API. A
+ * health check that reaches out to a third party reports *their* outage as
+ * ours, and gets the instance killed for someone else's downtime.
+ */
+export function getServiceState() {
+  return {
+    /** `idle` before the warm-up starts or after it failed and can retry. */
+    statIndex: warmState,
+    /* Entries, not Pokémon: each detail is stored under its lookup key, its
+       id and its name, so this runs to roughly three times the number of
+       species held. Reported raw rather than divided — it is a cache-occupancy
+       figure, and guessing at a species count from it would be worse. */
+    detailCacheEntries: detailCache.size,
+    typePoolCacheEntries: typePoolCache.size,
+    knownSpecies: nameIndex?.size ?? null,
+    upstream: BASE_URL,
+  };
+}
+
 export async function warmStatIndex(): Promise<void> {
   if (warmState !== "idle") return;
   warmState = "running";
