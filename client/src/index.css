@@ -1,0 +1,226 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================================================================
+   Pokédex — device layer.
+
+   The model: the page is not a document, it is a handheld device. The
+   background is the casing the shell is moulded from; every panel is a
+   moulded part or a lit screen set into it. Hard black outlines, flat offset
+   shadows, no blur and no glow in the chrome — the depth comes from the
+   offsets, the way it does on injection-moulded plastic.
+
+   Colour arrives from one place: the ball themes in `lib/ballThemes.ts` write
+   `--ball-*` onto <html>, and the `--pd-*` tokens below read through them with
+   the Poké Ball as fallback, so the device is fully themed before any JS runs
+   and stays correct if it never does.
+   =========================================================================== */
+
+@layer base {
+  :root {
+    /* --- device chrome (hex — the casing never takes an alpha) ----------- */
+    --pd-casing: var(--ball-casing, #b4293c);
+    --pd-ridge-a: var(--ball-ridge-a, #c9455a);
+    --pd-ridge-b: var(--ball-ridge-b, #7a1526);
+    --pd-dome: var(--ball-dome, #e0343f);
+    --pd-dome-lo: var(--ball-dome-lo, #8e1622);
+    --pd-accent: var(--ball-accent, #b4293c);
+    --pd-accent-ink: var(--ball-accent-ink, #ffffff);
+    --pd-black: #1b1b1b;
+
+    /* indicator lights — the lamp cluster reads the same on every ball */
+    --pd-led-red: #e44b4b;
+    --pd-led-yellow: #f2c438;
+    --pd-led-green: #4caf50;
+
+    /* --- geometry -------------------------------------------------------- */
+    --pd-border: 3px solid var(--pd-black);
+    --pd-border-sm: 2px solid var(--pd-black);
+    --pd-drop: 4px 4px 0 rgb(0 0 0 / 0.28);
+    --pd-drop-sm: 3px 3px 0 rgb(0 0 0 / 0.28);
+    --pd-inset: inset 2px 2px 0 rgb(27 27 27 / 0.1);
+
+    /* --- Tailwind token layer (triplets — these take an alpha) ----------- */
+    /* The interior is tinted by the ball too, not left neutral: a black-and-
+       gold Ultra shell around plain grey panels reads as two unrelated
+       designs. The tints sit a few percent off white, so ink contrast is
+       unchanged and only the temperature of the interior moves. */
+    --canvas: var(--ball-screen-rgb, 255 251 251); /* the lit display */
+    --surface: var(--ball-panel-rgb, 247 241 242); /* moulded panel face */
+    --raised: var(--ball-slot-rgb, 237 224 226); /* recessed field */
+    --edge: 27 27 27; /* every border is casing black */
+    --ink: 27 27 27;
+    --muted: 92 92 92;
+    --signal: var(--ball-accent-rgb, 180 41 60);
+    --halo-strength: 0.16;
+  }
+
+  /* Night mode. The casing keeps its ball colour — a device does not change
+     the plastic it is moulded from — but the interior goes to a lit-in-the-
+     dark readout: deep slate panels, the screen a shade above them. */
+  .dark {
+    --canvas: 24 27 33;
+    --surface: 31 35 43;
+    --raised: 20 23 29;
+    --edge: 10 12 16;
+    --ink: 232 237 244;
+    --muted: 143 155 172;
+    --halo-strength: 0.26;
+    --pd-black: #0a0c10;
+    --pd-drop: 4px 4px 0 rgb(0 0 0 / 0.5);
+    --pd-drop-sm: 3px 3px 0 rgb(0 0 0 / 0.5);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* The casing. Two mouldings read across it: a soft top-lit sheen, and the
+     equator shadow where the two halves of the shell meet. */
+  body {
+    @apply text-ink font-sans antialiased;
+    background-color: var(--pd-casing);
+    background-image:
+      radial-gradient(120% 60% at 50% -10%, rgb(255 255 255 / 0.11), transparent 60%),
+      linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 0.16) 100%);
+    background-attachment: fixed;
+    transition: background-color 0.35s ease;
+  }
+
+  :focus-visible {
+    @apply outline-none;
+    outline: 3px solid var(--pd-black);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Small uppercase mono label used for every readout in the interface. */
+  .readout {
+    @apply font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted;
+  }
+
+  /* ---- device parts ---------------------------------------------------- */
+
+  /* A moulded panel set into the casing. */
+  .panel {
+    background: rgb(var(--surface));
+    border: var(--pd-border);
+    border-radius: 12px;
+    box-shadow: var(--pd-drop);
+  }
+
+  /* The lit display. Everything that shows data sits on one of these. */
+  .screen {
+    background: rgb(var(--canvas));
+    border: var(--pd-border);
+    border-radius: 8px;
+    box-shadow: var(--pd-inset);
+  }
+
+  /* A recessed field — inputs, inactive tabs, wells. */
+  .slot {
+    background: rgb(var(--raised));
+    border: var(--pd-border-sm);
+    border-radius: 10px;
+    box-shadow: var(--pd-inset);
+  }
+
+  /* The hinge ridge that runs under the lamp cluster, as on the shell's
+     equator. Lit face over shadowed underside. */
+  .ridge {
+    background: linear-gradient(
+      180deg,
+      var(--pd-ridge-a) 0%,
+      var(--pd-ridge-a) 46%,
+      var(--pd-ridge-b) 54%,
+      var(--pd-ridge-b) 100%
+    );
+    border: var(--pd-border-sm);
+    border-radius: 999px;
+  }
+
+  /* The big round lamp at the top left of every Pokédex, plus the three small
+     ones beside it. `.lamp-lit` is the glass; the ring is the bezel. */
+  .lamp {
+    border: var(--pd-border);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 30%, rgb(255 255 255 / 0.9), transparent 44%),
+      var(--lamp-color, var(--pd-led-red));
+    box-shadow: var(--pd-drop-sm);
+  }
+
+  .led {
+    border: var(--pd-border-sm);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 30%, rgb(255 255 255 / 0.75), transparent 50%),
+      var(--lamp-color, var(--pd-led-red));
+  }
+
+  /* A pressable moulded control. The press is physical: the button travels
+     into its own drop shadow rather than dimming. */
+  .pd-press {
+    box-shadow: var(--pd-drop-sm);
+    transition:
+      transform 0.08s ease,
+      box-shadow 0.08s ease;
+  }
+
+  .pd-press:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 rgb(0 0 0 / 0.28);
+  }
+
+  /* Signature element: a containment halo behind each specimen, tinted by its
+     primary type. The rings widen on hover as the sprite lifts. */
+  .halo {
+    background: radial-gradient(
+      circle at 50% 52%,
+      rgb(var(--type-rgb) / calc(var(--halo-strength) * 2.6)) 0%,
+      rgb(var(--type-rgb) / var(--halo-strength)) 42%,
+      transparent 70%
+    );
+  }
+
+  .halo-ring {
+    @apply pointer-events-none absolute rounded-full border transition-transform duration-500;
+    border-color: rgb(var(--type-rgb) / 0.28);
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden bg-ink/[0.06] dark:bg-ink/[0.09];
+  }
+
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    content: "";
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--ink) / 0.07),
+      transparent
+    );
+  }
+}
+
+/* Type rail and moves list scroll horizontally without a chrome scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

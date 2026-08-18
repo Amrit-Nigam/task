@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-ssr
+build
 *.local
 .env
 .env.*
@@ -15,3 +16,5 @@ pnpm-debug.log*
 !.vscode/extensions.json
 .idea
 .vercel
+.turbo
+*.tsbuildinfo
